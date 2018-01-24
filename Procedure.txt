@@ -1,0 +1,37 @@
+
+
+
+
+
+--select * from dbo.STK with(nolock)
+
+
+--exec sp_test '10083 SÝEMENS','2017-03-01','2017-03-01'
+alter proc sp_test
+@MalKodu nvarchar(50),
+@TarihBas datetime,
+@TarihBit datetime
+
+as
+begin
+set dateformat ymd
+set nocount on;
+
+select 
+case when IslemTur=0 then 'Giris' else  'Çýkýþ' end IslemTur 
+,sti.EvrakNo as EvrakNo
+,convert(nvarchar(15),cast(sti.Tarih-2 as datetime),104) as Tarih
+,cast(convert(nvarchar(15),cast(sti.Tarih-2 as datetime),112) as datetime)  as Tarihx
+,case when sti.IslemTur=0 then sti.Miktar else 0 end  as GirisMiktari
+,case when sti.IslemTur=1 then sti.Miktar else 0 end  as CikisMiktari
+--, as Stok
+from dbo.STI AS sti with(nolock)
+inner join dbo.STK as stk on stk.MalKodu=sti.MalKodu 
+where cast(convert(nvarchar(15),cast(sti.Tarih-2 as datetime),112) as datetime)   
+between cast(convert(nvarchar(15),cast(@TarihBas as datetime),112) as datetime) and  cast(convert(nvarchar(15),cast(@TarihBas as datetime),112)  as datetime)
+and stk.MalKodu like @MalKodu+'%'
+order by convert(nvarchar(15),cast(sti.Tarih-2 as datetime),104)  
+
+
+
+end 
